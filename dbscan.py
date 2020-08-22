@@ -12,3 +12,9 @@ class DensityBasedSCAN(Object):
 
     def predict(self, data):
         pass # TODO: maybe this is just returning clusters for only fit data
+
+    def cluster2D(self):
+        pass # TODO: start with clustering only two dimensional arrays
+
+    def cluster_ndimensional(self):
+        pass # TODO: if I have time creat n-dimensional clustering
