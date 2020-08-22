@@ -25,7 +25,7 @@ Assumptions, everything is noise until proven otherwise. Border points follow im
 A sequential solution
 ```
 Compare point 1 and point 2
-If within epsilone distance: 
+If within epsilon distance: 
     Add point 2 to point 1 relationship list, add point 1 to point 2s relationship list.
 
     If relationship list is greater than or equal to  minimum points:
