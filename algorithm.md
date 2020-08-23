@@ -92,10 +92,15 @@ loop while length of indices list is greater than 0:
             pointA is set to cluster_counter group
         
     Cluster is fully explored
-    remove relationshiplist points from the indiceslist, because they have been
-    fully explored and attributed to a cluster
+    remove relationshiplist points from the indiceslist, because they have been fully explored and attributed to a cluster
+
+    remove the point1 from the indices list
 
     increment cluster_counter
 
     restart loop if there are still indices left
 ```
+
+This will keep the same time complexity of O(n^2). If the entire data set is noise, each point will get compared to each other in the list. If the data set is not entirely noise, then each point is compared to each other until a core point is found.  Then once a core point is found, each of those is compared to every point on the list.  Once the cluster is fully explored, those points are 'removed' and never checked against again.
+
+Space complexity is n(cluster_list) + n(point types) + n(relationship_list). So O(3n) round to O(n) still.

@@ -4,17 +4,26 @@ import numpy as np
 class DensityBasedSCAN(Object):
 
     def __init__(self, epsilon = 1, min_samples = 3):
+        # TODO verify that epsilon and min samples are valid
         self.epsilon = epislon
         self.min_samples = min_samples
 
     def fit(self, data):
-        self.clusters = self.cluster2D(data) # TODO: fitting without returning clusters
+        # TODO Verify data is sent
+        self.cluster_second_pass
+        self._is_fit = True
 
     def fit_predict(self, data):
-        pass # TODO: fitting, and returns clusters
+        # TODO Verify data is sent
+        self.cluster_second_pass
+        self._is_fit = True
+        return self.clusters
 
     def predict(self):
-        pass # TODO: maybe this is just returning clusters for only fit data
+        if self._is_fit:
+            return self.clusters
+        else:
+            raise Exception('Must fit data before calling predict')
 
     def _distance(self, a, b):
         # we are going to use the norm, so we can work with greater than 2d
@@ -29,10 +38,79 @@ class DensityBasedSCAN(Object):
         self.point_type = ['noise'] * length
         self.clusters = np.full((length, 1), -1)
 
-        indices = [i for i in range(length))] # a list of indices
+        # a list of indices.  This would be better with a more robust data type
+        # but I'm restricted to only native python, numpy and scipy
+        # TODO: build a better datastructure for this
+        indices = [i for i in range(length))]
 
-        while len(indicies) > 0:
+        cluster_counter = 0 #for incrementing cluster groups
+
+        while len(indices) > 0:
+            # this number will change as I remove indices from the list at the
+            # end of the loop
+            cur_index = indices[0]
+            point1 = data[cur_index] # take the first point from indices list
+
+            relationship_list = []
+
+            # compare point1 to every other point in the data
+            for i, point2 in enumerate(data):
+                if i == cur_index:
+                    continue
+                elif self._distance(point1, point2) <= self.epsilon:
+                    relationship_list.append(i)
             
+            # Determine if point1 is a core point
+            if len(relationship_list) >= self.min_samples:
+                self.point_type[cur_index] = 'core'
+                self.clusters[cur_index] = cluster_counter
+
+                # Explore the entire cluster
+                # I'm doing this with a while loop, because I may need to expand
+                # my relationship_list as more relationships are found. As I
+                # understand, for loops use a copy of the list for iterating
+                # and do not play nicely with this sort of behavior.
+                # I promise to resolve this while loop with an index iterator.
+                j = 0
+                while j < len(relationship_list):
+                    subset_list = []
+                    clus_index = relationship_list[j]
+                    pointa = data[clus_index]
+
+                    for k, pointb in enumerate(data):
+                        if k == clus_index:
+                            continue
+                        elif self._distance(pointa, pointb):
+                            subset_list.append(k)
+
+                    # Core point or border point?
+                    if len(subset_list) >= self.min_samples:
+                        self.point_type[clus_index] = 'core'
+                        self.clusters[clus_index] = cluster_counter
+                        
+                        # using sets to find what new points were explored
+                        diff = list(set(subset_list).difference(set(relationship_list)))
+
+                        relationship_list.extend(diff)
+                    else:
+                        self.point_type[clus_index] = 'border'
+                        self.clusters[clus_index] = cluster_counter
+
+                    # fulfilling my promise
+                    j += 1
+
+                # Cluster is fully explored
+                indices.remove(cur_index)
+                indices.remove(relationship_list)
+
+                cluster_counter += 1
+
+            # Not a core point, do nothing, remove from indices list and start
+            # loop over
+            else:
+                indices.remove(cur_index)
+                continue
+        
 
     def cluster_first_pass(self, data):
         
