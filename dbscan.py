@@ -22,8 +22,19 @@ class DensityBasedSCAN(Object):
 
         return np.linalg.norm(a - b)
 
+    def cluster_second_pass(self, data):
 
-    def cluster2D(self, data):
+        length = data.shape[0] # how many elements are in our passed in data
+
+        self.point_type = ['noise'] * length
+        self.clusters = np.full((length, 1), -1)
+
+        indices = [i for i in range(length))] # a list of indices
+
+        while len(indicies) > 0:
+            
+
+    def cluster_first_pass(self, data):
         
         # I might not need this, but I think it might be cool to have
         self.point_type = ['noise'] * data.shape[0]

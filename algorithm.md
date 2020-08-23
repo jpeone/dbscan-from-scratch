@@ -45,3 +45,57 @@ So with this set up, if a point belongs to a cluster, but is not a core point, i
 This solution is basically O(n^2) time complexity which is not awesome.  Wonder if I can get it down
 
 It is O(n) space complexity, which is what ever, pretty much what I'd expect.
+
+### Second Pass
+The problem with my first pass, is I don't take into account how I'm traversing
+my data.  If I compare each point sequentially, I could potentially run into
+two points that are a part of the same cluster, but pretty far apart from each
+other. And I would then treat them as though they are part of two different 
+clusters.  This would just turn into a total mess with the right sized data. 
+So instead I'm going to search until I find a core point, then I will iterate 
+along its related points, until I've fully explored that cluster. Once that is 
+done, I'll remove those explored points and traverse the remainder points, 
+until I find the next core point.
+
+```
+Make a list of indices based off the passed in data.
+Make a second empty list for your cluster relationships
+a counter for cluster number
+
+loop while length of indices list is greater than 0:
+
+    Search for a core point
+    Loop with point1 and compare to every other point in the indices list
+
+        If within epsilon distance:
+            Add point2 cluster relationships list
+
+    Determine if core point is found
+    if len relationship list >= min_samples:
+        point1 is set to a core point
+        point1 is set to cluster_counter group
+
+        Explore entire cluster
+        Determine if relationships are core or border points
+        create a relationship subset list
+        loop while over relationship list and compare each relationship to every point
+            if within epsilon disatance:
+                add pointB to relationship subset list
+            
+        if len subsetlist >= min_samples:
+            pointA is set to a core point
+            pointA is set to cluster_counter group
+            find the points in subsetlist that are not in relationship list
+            add to the end of relationship list
+        else:
+            pointA is a border point
+            pointA is set to cluster_counter group
+        
+    Cluster is fully explored
+    remove relationshiplist points from the indiceslist, because they have been
+    fully explored and attributed to a cluster
+
+    increment cluster_counter
+
+    restart loop if there are still indices left
+```
