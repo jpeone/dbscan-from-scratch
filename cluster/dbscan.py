@@ -1,21 +1,39 @@
 import numpy as np
 
 class DensityBasedSCAN(object):
+    '''
+    Perform DBSCAN clustering on a set of points.
+
+    Params:
+        epsilon - the distance that a point must fall within to make a cluster
+        min_samples - the minimum number of member points to make a core point
+
+    Methods:
+        fit(data) - takes a numpy array of points in n-dimensional space and
+            clusters them.
+        fit_predict(data) - takes a numpy array of points in n-dimensionl space
+            and clusters them and returns a numpy array of the resulting 
+            cluster names.
+        preditct() - returns the cluster names from an already fit model
+
+    Example:
+
+    '''
 
     def __init__(self, epsilon = 1, min_samples = 3):
         # TODO verify that epsilon and min samples are valid
-        self.epsilon = epislon
+        self.epsilon = epsilon
         self.min_samples = min_samples
         self._is_fit = False
 
     def fit(self, data):
         # TODO Verify data is sent
-        self.cluster_second_pass
+        self.cluster(data)
         self._is_fit = True
 
     def fit_predict(self, data):
         # TODO Verify data is sent
-        self.cluster_second_pass
+        self.cluster(data)
         self._is_fit = True
         return self.clusters
 
@@ -28,15 +46,14 @@ class DensityBasedSCAN(object):
     def _distance(self, a, b):
         # we are going to use the norm, so we can work with greater than 2d
         # space
-
         return np.linalg.norm(a - b)
 
-    def cluster_second_pass(self, data):
+    def cluster(self, data):
 
         length = data.shape[0] # how many elements are in our passed in data
 
         self.point_type = ['noise'] * length
-        self.clusters = np.full((length, 1), -1)
+        self.clusters = np.full((length,), -1)
 
         # a list of indices.  This would be better with a more robust data type
         # but I'm restricted to only native python, numpy and scipy
@@ -61,14 +78,16 @@ class DensityBasedSCAN(object):
                     relationship_list.append(i)
             
             # Determine if point1 is a core point
-            if len(relationship_list) >= self.min_samples:
+            # Minus 1 because we do not include the current point in the
+            # relationship list, so we need to offset the sample size by that
+            if len(relationship_list) >= (self.min_samples - 1):
                 self.point_type[cur_index] = 'core'
                 self.clusters[cur_index] = cluster_counter
 
                 # Explore the entire cluster
                 # I'm doing this with a while loop, because I may need to expand
-                # my relationship_list as more relationships are found. As I
-                # understand, for loops use a copy of the list for iterating
+                # my relationship_list as more relationships are found.
+                # for loops use a copy of the list for iterating
                 # and do not play nicely with this sort of behavior.
                 # I promise to resolve this while loop with an index iterator.
                 j = 0
@@ -80,16 +99,16 @@ class DensityBasedSCAN(object):
                     for k, pointb in enumerate(data):
                         if k == clus_index:
                             continue
-                        elif self._distance(pointa, pointb):
+                        elif self._distance(pointa, pointb) <= self.epsilon:
                             subset_list.append(k)
 
                     # Core point or border point?
-                    if len(subset_list) >= self.min_samples:
+                    if len(subset_list) >= (self.min_samples - 1):
                         self.point_type[clus_index] = 'core'
                         self.clusters[clus_index] = cluster_counter
                         
                         # using sets to find what new points were explored
-                        diff = list(set(subset_list).difference(set(relationship_list)))
+                        diff = list(set(subset_list).difference(set(relationship_list) | set([cur_index])))
 
                         relationship_list.extend(diff)
                     else:
@@ -101,7 +120,8 @@ class DensityBasedSCAN(object):
 
                 # Cluster is fully explored
                 indices.remove(cur_index)
-                indices.remove(relationship_list)
+                for ele in relationship_list:
+                    indices.remove(ele)
 
                 cluster_counter += 1
 
@@ -111,80 +131,5 @@ class DensityBasedSCAN(object):
                 indices.remove(cur_index)
                 continue
         
-
-    # def cluster_first_pass(self, data):
-        
-    #     # I might not need this, but I think it might be cool to have
-    #     self.point_type = ['noise'] * data.shape[0]
-
-    #     # A list of clusters that each point belongs to -1 means no cluster
-    #     self.clusters = np.full((data.shape[0], 1), -1)
-
-    #     # take the first point, and compare it to all other points in the data
-    #     for pointi, i in enumerate(data):
-
-    #         # this is for keeping track of indices of points that are related
-    #         # to pointi, but before we have enough relationships to designate it
-    #         # a core point
-    #         pre_core = []
-
-    #         relate_counter = 0 #for keeping track of the number of relations
-
-    #         cluster_counter = 0 #for naming new clusters
-
-    #         for pointj, j in enumerate(data):
-
-    #             # if at the same index, skip comparison (its the same point)
-    #             if i == j:
-    #                 continue
-
-    #             # check to see if the points are within epsilon distance
-    #             elif _distance(pointi, pointj) <= self.epsilon:
-    #                 relate_counter += 1
-
-    #                 # Check to see how many relations are made
-    #                 # Track the less than min_samples relations
-    #                 if relate_counter < self.min_samples:
-    #                     pre_core.append(j)
-
-    #                 # For exactly when you hit the min_samples and need to 
-    #                 # upgrade pre_core points to be at least border
-    #                 elif relate_counter == self.min_samples:
-    #                     self.point_type[i] = 'core'
-
-    #                     if self.clusters[i] >= 0:
-    #                         cur_cluster = self.clusters[i]
-    #                     else:
-    #                         cur_cluster = cluster_counter
-    #                         self.clusters[i] = cluster_counter
-
-    #                     # realized this is moot, if a point is related to a core
-    #                     # I will have already assigned it to that cluster
-    #                     #
-    #                     # for k in pre_core:
-    #                     #     if self.point_type[k] == 'core':
-    #                     #         # TODO, keep an eye on this, you may need to
-    #                     #         # compare potential cur_clusters incase it 
-    #                     #         # relates to multiple clusters. I suspect that
-    #                     #         # will not be an issue though.
-    #                     #         if self.clusters[k] < cur_cluster:
-    #                     #             cur_cluster = self.clusters[k]
-    #                     #     elif self.point_type[k] == 'border':
-    #                     #         # TODO, keep an eye on this, I believe nothing
-    #                     #         # should happen here, because two core points 
-    #                     #         # could share a border point within epsilon
-    #                     #         # distance, while that border point itself
-    #                     #         # still hass fewer than min_samples meaning
-    #                     #         # it would not impart the property of one 
-    #                     #         # cluster onto another.
-    #                     #         continue
-                        
-    #                     for k in pre_core:
-    #                         if self.point_type[k] == 'noise':
-    #                             self.point_type[k] = 'border'
-    #                             self.clusters[k] = curr_cluster
-    #                         else:
-
-                                
     def cluster_ndimensional(self):
         pass # TODO: if I have time creat n-dimensional clustering

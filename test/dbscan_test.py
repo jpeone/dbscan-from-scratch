@@ -12,11 +12,25 @@ class TestDBSCAN(unittest.TestCase):
                                     [8, 7],
                                     [8, 8],
                                     [25, 80]])
+        self.simple_3d_set = np.array([[1, 2, 3],
+                                    [2, 2, 4],
+                                    [2, 3, 5],
+                                    [8, 7, 9],
+                                    [8, 8, 10],
+                                    [25, 80, 90]])
 
-    def simple_test(self):
-        clustering = DensityBasedSCAN(epsilon = 3, min_samples= 2)
+    def test_simple_set(self):
+        clustering = DensityBasedSCAN(epsilon = 3, min_samples = 2)
         clustering.fit(self.simple_set)
-        self.assertEqual(clustering.predict(), np.array([0, 0, 0, 1, 1, -1]))
+        np.testing.assert_array_equal(clustering.predict(), np.array([0, 0, 0, 1, 1, -1]))
+
+    def test_simple_3d_set(self):
+        clustering = DensityBasedSCAN(epsilon = 3, min_samples = 2)
+        clustering.fit(self.simple_3d_set)
+        np.testing.assert_array_equal(clustering.predict(), np.array([0, 0, 0, 1, 1, -1]))
+
+
+
 
 
 if __name__ == '__main__':
