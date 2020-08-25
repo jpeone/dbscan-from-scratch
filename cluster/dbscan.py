@@ -2,7 +2,7 @@ import numpy as np
 
 class DensityBasedSCAN(object):
     '''
-    Perform DBSCAN clustering on a set of points.
+    Perform DBSCAN clustering on a set of n-dimensional points.
 
     Params:
         epsilon - the distance that a point must fall within to make a cluster
@@ -17,7 +17,18 @@ class DensityBasedSCAN(object):
         preditct() - returns the cluster names from an already fit model
 
     Example:
-
+        >>>> from cluster.dbscan import DensityBasedSCAN
+        >>>> import numpy as np
+        >>>> data = np.array([[1, 2],
+        ...                   [2, 2],
+        ...                   [2, 3],
+        ...                   [8, 7],
+        ...                   [8, 8],
+        ...                   [25, 80]])
+        >>>> clustering = DensityBasedSCAN(epsilon = 3, min_samples = 2)
+        >>>> clustering.fit(data)
+        >>>> clustering.predict()
+        array([0, 0, 0, 1, 1, -1])
     '''
 
     def __init__(self, epsilon = 1, min_samples = 3):
@@ -103,6 +114,8 @@ class DensityBasedSCAN(object):
                             subset_list.append(k)
 
                     # Core point or border point?
+                    # Minus 2 because we don't include the current point in the
+                    # subset list
                     if len(subset_list) >= (self.min_samples - 1):
                         self.point_type[clus_index] = 'core'
                         self.clusters[clus_index] = cluster_counter

@@ -1,6 +1,8 @@
 import unittest
 import numpy as np
 from cluster.dbscan import DensityBasedSCAN
+from sklearn.cluster import DBSCAN
+import time
 
 
 class TestDBSCAN(unittest.TestCase):
@@ -18,6 +20,15 @@ class TestDBSCAN(unittest.TestCase):
                                     [8, 7, 9],
                                     [8, 8, 10],
                                     [25, 80, 90]])
+        self.rand_small = np.random.rand(20, 4)
+        self.rand_med = np.random.rand(200, 5)
+        self.rand_big = np.random.rand(600, 10)
+
+        self._started_at = time.time()
+
+    def tearDown(self):
+        elapsed = time.time() - self._started_at
+        print('{} ({}s)'.format(self.id(), round(elapsed, 3)))
 
     def test_simple_set(self):
         clustering = DensityBasedSCAN(epsilon = 3, min_samples = 2)
@@ -28,6 +39,57 @@ class TestDBSCAN(unittest.TestCase):
         clustering = DensityBasedSCAN(epsilon = 3, min_samples = 2)
         clustering.fit(self.simple_3d_set)
         np.testing.assert_array_equal(clustering.predict(), np.array([0, 0, 0, 1, 1, -1]))
+
+    def test_random_4d(self):
+        homebrew = DensityBasedSCAN(epsilon = 3, min_samples = 2)
+        homebrew.fit(self.rand_small)
+
+        scikit = DBSCAN(eps = 3, min_samples = 2)
+        scikit.fit(self.rand_small)
+
+        np.testing.assert_array_equal(homebrew.predict(), scikit.labels_)
+
+    def test_random_5d(self):
+        homebrew = DensityBasedSCAN(epsilon = 3, min_samples = 2)
+        homebrew.fit(self.rand_med)
+
+        scikit = DBSCAN(eps = 3, min_samples = 2)
+        scikit.fit(self.rand_med)
+
+        np.testing.assert_array_equal(homebrew.predict(), scikit.labels_)
+
+    def test_random_8d(self):
+        homebrew = DensityBasedSCAN(epsilon = 3, min_samples = 2)
+        homebrew.fit(self.rand_big)
+
+        scikit = DBSCAN(eps = 3, min_samples = 2)
+        scikit.fit(self.rand_big)
+
+        np.testing.assert_array_equal(homebrew.predict(), scikit.labels_)
+
+    def test_time_comparison(self):
+        start = time.time()
+        homebrew = DensityBasedSCAN(epsilon = 3, min_samples = 2)
+        homebrew.fit(self.rand_big)
+        finish = time.time()
+        hbtime = finish - start
+
+        start = time.time()
+        scikit = DBSCAN(eps = 3, min_samples = 2)
+        scikit.fit(self.rand_big)
+        finish = time.time()
+        sktime = finish - start
+
+        print('sklearn dbscan runtime:', sktime)
+        print('my dbscan runtime:', hbtime)
+
+    def test_valid_eps_min_samp(self):
+        pass
+
+    def test_fit_invalid_data(self):
+        pass
+
+
 
 
 
