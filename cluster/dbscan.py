@@ -63,32 +63,29 @@ class DensityBasedSCAN(object):
             raise ValueError('Data being passed in must not contain nans')
 
     def _distance(self, a, b):
-        # norm allows me to work in n-dimensional space
         return np.linalg.norm(a - b)
 
     def cluster(self, data):
 
-        length = data.shape[0] # how many elements are in our passed in data
+        length = data.shape[0]
 
         self.point_type = ['noise'] * length
         self.clusters = np.full((length,), -1)
 
-        # a list of indices.  This would be better with a more robust data type
-        # but I'm restricted to only native python, numpy and scipy
         # TODO: build a better datastructure for this
         indices = [i for i in range(length)]
 
-        cluster_counter = 0 #for incrementing cluster groups
+        cluster_counter = 0
 
+        # I promise to resolve this loop by removing elements from indices
         while len(indices) > 0:
-            # this number will change as I remove indices from the list at the
-            # end of the loop
             cur_index = indices[0]
-            point1 = data[cur_index] # take the first point from indices list
+            point1 = data[cur_index]
 
             relationship_list = []
 
-            # compare point1 to every other point in the data
+            # Find all other points close to point1
+            # TODO: Candidate for a function
             for i, point2 in enumerate(data):
                 if i == cur_index:
                     continue
@@ -96,17 +93,11 @@ class DensityBasedSCAN(object):
                     relationship_list.append(i)
             
             # Determine if point1 is a core point
-            # Minus 1 because we do not include the current point in the
-            # relationship list, so we need to offset the sample size by that
             if len(relationship_list) >= (self.min_samples - 1):
                 self.point_type[cur_index] = 'core'
                 self.clusters[cur_index] = cluster_counter
 
-                # Explore the entire cluster
-                # I'm doing this with a while loop, because I may need to expand
-                # my relationship_list as more relationships are found.
-                # for loops use a copy of the list for iterating
-                # and do not play nicely with this sort of behavior.
+                # Explore all points related to point1
                 # I promise to resolve this while loop with an index iterator.
                 j = 0
                 while j < len(relationship_list):
@@ -114,15 +105,14 @@ class DensityBasedSCAN(object):
                     clus_index = relationship_list[j]
                     pointa = data[clus_index]
 
+                    #add any points 
                     for k, pointb in enumerate(data):
                         if k == clus_index:
                             continue
                         elif self._distance(pointa, pointb) <= self.epsilon:
                             subset_list.append(k)
 
-                    # Core point or border point?
-                    # Minus 2 because we don't include the current point in the
-                    # subset list
+                    # Determine if pointa is a core point or a border point
                     if len(subset_list) >= (self.min_samples - 1):
                         self.point_type[clus_index] = 'core'
                         self.clusters[clus_index] = cluster_counter
@@ -135,7 +125,6 @@ class DensityBasedSCAN(object):
                         self.point_type[clus_index] = 'border'
                         self.clusters[clus_index] = cluster_counter
 
-                    # fulfilling my promise
                     j += 1
 
                 # Cluster is fully explored
