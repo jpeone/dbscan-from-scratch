@@ -55,9 +55,12 @@ class DensityBasedSCAN(object):
             raise Exception('Must fit data before calling predict')
 
     def _validate(self, data):
-        pass
-        # if not np.issubdtype(data.dtype, np.number):
-        #     raise 
+        if not np.issubdtype(data.dtype, np.number):
+            raise TypeError('Data being passed in must be numeric')
+        
+        sum = np.sum(data)
+        if np.isnan(sum):
+            raise ValueError('Data being passed in must not contain nans')
 
     def _distance(self, a, b):
         # norm allows me to work in n-dimensional space

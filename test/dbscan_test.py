@@ -4,7 +4,6 @@ from cluster.dbscan import DensityBasedSCAN
 from sklearn.cluster import DBSCAN
 import time
 
-
 class TestDBSCAN(unittest.TestCase):
 
     def setUp(self):
