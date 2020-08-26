@@ -2,7 +2,8 @@ import numpy as np
 
 class DensityBasedSCAN(object):
     '''
-    Perform DBSCAN clustering on a set of n-dimensional points.
+    Perform density based spacial clustering of applications with noise on a 
+    set of n-dimensional points.
 
     Params:
         epsilon - the distance that a point must fall within to make a cluster
@@ -38,28 +39,28 @@ class DensityBasedSCAN(object):
             raise ValueError('Minimum samples must be greater than 1')
         self.epsilon = epsilon
         self.min_samples = min_samples
-        self._is_fit = False
 
     def fit(self, data):
-        # TODO Verify data is sent
+        self._validate(data)
         self.cluster(data)
-        self._is_fit = True
 
     def fit_predict(self, data):
-        # TODO Verify data is sent
-        self.cluster(data)
-        self._is_fit = True
+        self.fit(data)
         return self.clusters
 
     def predict(self):
-        if self._is_fit:
+        try:
             return self.clusters
-        else:
+        except:
             raise Exception('Must fit data before calling predict')
 
+    def _validate(self, data):
+        pass
+        # if not np.issubdtype(data.dtype, np.number):
+        #     raise 
+
     def _distance(self, a, b):
-        # we are going to use the norm, so we can work with greater than 2d
-        # space
+        # norm allows me to work in n-dimensional space
         return np.linalg.norm(a - b)
 
     def cluster(self, data):
@@ -146,6 +147,3 @@ class DensityBasedSCAN(object):
             else:
                 indices.remove(cur_index)
                 continue
-        
-    def cluster_ndimensional(self):
-        pass # TODO: if I have time creat n-dimensional clustering

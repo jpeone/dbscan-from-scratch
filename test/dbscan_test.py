@@ -20,13 +20,14 @@ class TestDBSCAN(unittest.TestCase):
                                     [8, 7, 9],
                                     [8, 8, 10],
                                     [25, 80, 90]])
-        self.rand_small = np.random.rand(20, 4)
-        self.rand_med = np.random.rand(200, 5)
-        self.rand_big = np.random.rand(600, 10)
+        self.rand_small = np.random.randint(-100, 100,size = (20, 4))
+        self.rand_med = np.random.randint(-500, 500, size = (200, 5))
+        self.rand_big = np.random.randint(-1000, 1000, size = (600, 10))
 
         self._started_at = time.time()
 
     def tearDown(self):
+        # print out test timing after running each test
         elapsed = time.time() - self._started_at
         print('{} ({}s)'.format(self.id(), round(elapsed, 3)))
 
@@ -50,19 +51,19 @@ class TestDBSCAN(unittest.TestCase):
         np.testing.assert_array_equal(homebrew.predict(), scikit.labels_)
 
     def test_random_5d(self):
-        homebrew = DensityBasedSCAN(epsilon = 3, min_samples = 2)
+        homebrew = DensityBasedSCAN(epsilon = 4, min_samples = 4)
         homebrew.fit(self.rand_med)
 
-        scikit = DBSCAN(eps = 3, min_samples = 2)
+        scikit = DBSCAN(eps = 4, min_samples = 4)
         scikit.fit(self.rand_med)
 
         np.testing.assert_array_equal(homebrew.predict(), scikit.labels_)
 
     def test_random_10d(self):
-        homebrew = DensityBasedSCAN(epsilon = 3, min_samples = 2)
+        homebrew = DensityBasedSCAN(epsilon = 4, min_samples = 5)
         homebrew.fit(self.rand_big)
 
-        scikit = DBSCAN(eps = 3, min_samples = 2)
+        scikit = DBSCAN(eps = 4, min_samples = 5)
         scikit.fit(self.rand_big)
 
         np.testing.assert_array_equal(homebrew.predict(), scikit.labels_)
@@ -90,13 +91,21 @@ class TestDBSCAN(unittest.TestCase):
         with self.assertRaises(ValueError): DensityBasedSCAN(min_samples = 0)
 
     def test_fit_invalid_data(self):
-        pass
+        all_nan = np.empty([4, 4])
+        all_nan[:] = np.nan
+        some_nan = np.array([[1, 2, 3], [4, np.nan, 5], [6, 7, 8]])
+        all_str = np.array([['this'], ['is'], ['an array'], ['of'], ['strs']])
+        some_str = np.array([[1, 2, 'oops a string'], [3, 4, 5], [6, 7, 8]])
 
+        clustering = DensityBasedSCAN()
 
+        with self.assertRaises(ValueError): clustering.fit(all_nan)
+        with self.assertRaises(ValueError): clustering.fit(some_nan)
+        with self.assertRaises(TypeError): clustering.fit(all_str)
+        with self.assertRaises(TypeError): clustering.fit(some_str)
 
-
-
-
+    def test_predict_unfit_predict(self):
+        with self.assertRaises(Exception): DensityBasedSCAN().predict()
 
 if __name__ == '__main__':
     unittest.main()
