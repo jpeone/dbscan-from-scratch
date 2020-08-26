@@ -1,8 +1,9 @@
 import numpy as np
 
+
 class DensityBasedSCAN(object):
     '''
-    Perform density based spacial clustering of applications with noise on a 
+    Perform density based spacial clustering of applications with noise on a
     set of n-dimensional points.
 
     Params:
@@ -13,7 +14,7 @@ class DensityBasedSCAN(object):
         fit(data) - takes a numpy array of points in n-dimensional space and
             clusters them.
         fit_predict(data) - takes a numpy array of points in n-dimensionl space
-            and clusters them and returns a numpy array of the resulting 
+            and clusters them and returns a numpy array of the resulting
             cluster names.
         preditct() - returns the cluster names from an already fit model
 
@@ -32,7 +33,7 @@ class DensityBasedSCAN(object):
         array([0, 0, 0, 1, 1, -1])
     '''
 
-    def __init__(self, epsilon = 1, min_samples = 3):
+    def __init__(self, epsilon=1, min_samples=3):
         if epsilon <= 0:
             raise ValueError('Epsilon must be positive')
         if min_samples <= 1:
@@ -51,13 +52,13 @@ class DensityBasedSCAN(object):
     def predict(self):
         try:
             return self.clusters
-        except:
+        except BaseException:
             raise Exception('Must fit data before calling predict')
 
     def _validate(self, data):
         if not np.issubdtype(data.dtype, np.number):
             raise TypeError('Data being passed in must be numeric')
-        
+
         sum = np.sum(data)
         if np.isnan(sum):
             raise ValueError('Data being passed in must not contain nans')
@@ -91,7 +92,7 @@ class DensityBasedSCAN(object):
                     continue
                 elif self._distance(point1, point2) <= self.epsilon:
                     relationship_list.append(i)
-            
+
             # Determine if point1 is a core point
             if len(relationship_list) >= (self.min_samples - 1):
                 self.point_type[cur_index] = 'core'
@@ -105,7 +106,7 @@ class DensityBasedSCAN(object):
                     clus_index = relationship_list[j]
                     pointa = data[clus_index]
 
-                    #add any points 
+                    # add any points
                     for k, pointb in enumerate(data):
                         if k == clus_index:
                             continue
@@ -116,8 +117,7 @@ class DensityBasedSCAN(object):
                     if len(subset_list) >= (self.min_samples - 1):
                         self.point_type[clus_index] = 'core'
                         self.clusters[clus_index] = cluster_counter
-                        
-                        # using sets to find what new points were explored
+
                         diff = list(set(subset_list).difference(set(relationship_list) | set([cur_index])))
 
                         relationship_list.extend(diff)
@@ -134,8 +134,7 @@ class DensityBasedSCAN(object):
 
                 cluster_counter += 1
 
-            # Not a core point, do nothing, remove from indices list and start
-            # loop over
+            # Not a core point
             else:
                 indices.remove(cur_index)
                 continue
