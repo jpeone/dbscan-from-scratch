@@ -58,7 +58,7 @@ class TestDBSCAN(unittest.TestCase):
 
         np.testing.assert_array_equal(homebrew.predict(), scikit.labels_)
 
-    def test_random_8d(self):
+    def test_random_10d(self):
         homebrew = DensityBasedSCAN(epsilon = 3, min_samples = 2)
         homebrew.fit(self.rand_big)
 
@@ -84,7 +84,10 @@ class TestDBSCAN(unittest.TestCase):
         print('my dbscan runtime:', hbtime)
 
     def test_valid_eps_min_samp(self):
-        pass
+        with self.assertRaises(ValueError): DensityBasedSCAN(epsilon = -1)
+        with self.assertRaises(ValueError): DensityBasedSCAN(epsilon = 0)
+        with self.assertRaises(ValueError): DensityBasedSCAN(min_samples = -1)
+        with self.assertRaises(ValueError): DensityBasedSCAN(min_samples = 0)
 
     def test_fit_invalid_data(self):
         pass

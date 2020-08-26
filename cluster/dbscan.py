@@ -32,7 +32,10 @@ class DensityBasedSCAN(object):
     '''
 
     def __init__(self, epsilon = 1, min_samples = 3):
-        # TODO verify that epsilon and min samples are valid
+        if epsilon <= 0:
+            raise ValueError('Epsilon must be positive')
+        if min_samples <= 1:
+            raise ValueError('Minimum samples must be greater than 1')
         self.epsilon = epsilon
         self.min_samples = min_samples
         self._is_fit = False
