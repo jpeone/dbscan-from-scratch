@@ -66,6 +66,29 @@ class DensityBasedSCAN(object):
     def _distance(self, a, b):
         return np.linalg.norm(a - b)
 
+    def _neighbors(self, pointa, index, data):
+        '''
+        Finds the neighbors of a point within epsilon distance
+
+        Params:
+            pointa - the point to find neighbors for
+            index - the index that point resides at
+            data - the original data set passed in during fit
+        Returns:
+            A list of all the neighboring points
+        '''
+
+        nn = []
+
+        for i, pointb in enumerate(data):
+            if i == index:
+                continue
+            elif self._distance(pointa, pointb) <= self.epsilon:
+                nn.append(i)
+
+        return nn
+
+
     def cluster(self, data):
 
         length = data.shape[0]
@@ -73,7 +96,7 @@ class DensityBasedSCAN(object):
         self.point_type = ['noise'] * length
         self.clusters = np.full((length,), -1)
 
-        # TODO: build a better sctructure for this
+        # TODO: build a better sctructure for this, but MVP is a list
         indices = [i for i in range(length)]
 
         cluster_counter = 0
@@ -81,56 +104,46 @@ class DensityBasedSCAN(object):
         # I promise to resolve this loop by removing elements from indices
         while len(indices) > 0:
             cur_index = indices[0]
-            point1 = data[cur_index]
+            cur_point = data[cur_index]
 
-            relationship_list = []
+            cur_neighborhood = []
 
-            # Find all other points close to point1
-            # TODO: Candidate for a function
-            for i, point2 in enumerate(data):
-                if i == cur_index:
-                    continue
-                elif self._distance(point1, point2) <= self.epsilon:
-                    relationship_list.append(i)
+            # Find all other points close to cur_point
+            cur_neighborhood.extend(self._neighbors(cur_point, cur_index, data))
 
-            # Determine if point1 is a core point
-            if len(relationship_list) >= (self.min_samples - 1):
+            # Determine if cur_point is a core point
+            if len(cur_neighborhood) >= (self.min_samples - 1):
                 self.point_type[cur_index] = 'core'
                 self.clusters[cur_index] = cluster_counter
 
-                # Explore all points related to point1
+                # Explore all points related to cur_point
                 # I promise to resolve this while loop with an index iterator.
                 j = 0
-                while j < len(relationship_list):
-                    subset_list = []
-                    clus_index = relationship_list[j]
-                    pointa = data[clus_index]
+                while j < len(cur_neighborhood):
+                    subset_neighborhood = []
+                    subset_index = cur_neighborhood[j]
+                    subset_point = data[subset_index]
 
-                    # add any points
-                    # TODO: Candidate for a function
-                    for k, pointb in enumerate(data):
-                        if k == clus_index:
-                            continue
-                        elif self._distance(pointa, pointb) <= self.epsilon:
-                            subset_list.append(k)
+                    # Discover any missing neighbors
+                    subset_neighborhood.extend(self._neighbors(subset_point, subset_index, data))
 
-                    # Determine if pointa is a core point or a border point
-                    if len(subset_list) >= (self.min_samples - 1):
-                        self.point_type[clus_index] = 'core'
-                        self.clusters[clus_index] = cluster_counter
+                    # Determine if subset_point is a core point or a border point
+                    if len(subset_neighborhood) >= (self.min_samples - 1):
+                        self.point_type[subset_index] = 'core'
+                        self.clusters[subset_index] = cluster_counter
 
-                        diff = list(set(subset_list).difference(set(relationship_list) | set([cur_index])))
+                        diff = list(set(subset_neighborhood).difference(set(cur_neighborhood) | set([cur_index])))
 
-                        relationship_list.extend(diff)
+                        cur_neighborhood.extend(diff)
                     else:
-                        self.point_type[clus_index] = 'border'
-                        self.clusters[clus_index] = cluster_counter
+                        self.point_type[subset_index] = 'border'
+                        self.clusters[subset_index] = cluster_counter
 
                     j += 1
 
                 # Cluster is fully explored
                 indices.remove(cur_index)
-                for ele in relationship_list:
+                for ele in cur_neighborhood:
                     indices.remove(ele)
 
                 cluster_counter += 1
