@@ -1,7 +1,7 @@
 # DBSCAN algorithm
 Density Based Spacial Clustering of Applications with Noise as written by myself.
 
-This is a first pass to verify if I understand the concept, before relying on another more professionally written algorithm.
+A cluster is made by determining a points relationship to its neighboring points. So for each core point, there are minimum number of neighbors that make it a core point. If a corepoints neighbors are also corepoints, they are included in the cluster along with their neighbors. If a corepoints neighbors are not a corepoint (have less neighbors themselves), then it is a border point, included in the cluster but not it's neighbors. Any other points are noise.
 
 ## Definitions
 *Point* = A singular data point. In 2 dimension space, think a single point on a cartesian graph.  

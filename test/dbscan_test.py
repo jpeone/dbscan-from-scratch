@@ -83,8 +83,12 @@ class TestDBSCAN(unittest.TestCase):
         finish = time.time()
         sktime = finish - start
 
+        print()
+        print('Time Comparison: Spatial Indexing vs List indexing')
+        print('--------------------------------------------------------------')
         print('sklearn dbscan runtime:', sktime)
         print('my dbscan runtime:', hbtime)
+        print('--------------------------------------------------------------')
 
     def test_valid_eps_min_samp(self):
         with self.assertRaises(ValueError):

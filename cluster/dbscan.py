@@ -73,7 +73,7 @@ class DensityBasedSCAN(object):
         self.point_type = ['noise'] * length
         self.clusters = np.full((length,), -1)
 
-        # TODO: build a better datastructure for this
+        # TODO: build a better sctructure for this
         indices = [i for i in range(length)]
 
         cluster_counter = 0
@@ -107,6 +107,7 @@ class DensityBasedSCAN(object):
                     pointa = data[clus_index]
 
                     # add any points
+                    # TODO: Candidate for a function
                     for k, pointb in enumerate(data):
                         if k == clus_index:
                             continue
