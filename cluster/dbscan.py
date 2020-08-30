@@ -127,7 +127,7 @@ class DensityBasedSCAN(object):
                     # Discover any missing neighbors
                     subset_neighborhood.extend(self._neighbors(subset_point, subset_index, data))
 
-                    # Determine if subset_point is a core point or a border point
+                    # Determine if subset_point is core point or border point
                     if len(subset_neighborhood) >= (self.min_samples - 1):
                         self.point_type[subset_index] = 'core'
                         self.clusters[subset_index] = cluster_counter
