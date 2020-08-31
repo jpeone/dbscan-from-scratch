@@ -124,14 +124,14 @@ class DensityBasedSCAN(object):
                     subset_index = cur_neighborhood[j]
                     subset_point = data[subset_index]
 
-                    # Discover any missing neighbors
                     subset_neighborhood.extend(self._neighbors(subset_point, subset_index, data))
 
                     # Determine if subset_point is core point or border point
                     if len(subset_neighborhood) >= (self.min_samples - 1):
                         self.point_type[subset_index] = 'core'
                         self.clusters[subset_index] = cluster_counter
-
+                        
+                        # find and add any missing members
                         diff = list(set(subset_neighborhood).difference(set(cur_neighborhood) | set([cur_index])))
 
                         cur_neighborhood.extend(diff)
@@ -143,6 +143,7 @@ class DensityBasedSCAN(object):
 
                 # Cluster is fully explored
                 indices.remove(cur_index)
+                # to preserver order, I'm using list.remove instead of sets
                 for ele in cur_neighborhood:
                     indices.remove(ele)
 
